@@ -8,7 +8,6 @@ import (
 	"testing"
 	"umemory/internal/compute"
 	mock_compute "umemory/internal/compute/mock"
-	mock_storage "umemory/internal/storage/mock"
 
 	"github.com/golang/mock/gomock"
 	"go.uber.org/zap"
@@ -25,7 +24,7 @@ func TestComputeHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mock_storage.NewMockStorage(ctrl)
+	mockStorage := mock_compute.NewMockStorage(ctrl)
 	mockParser := mock_compute.NewMockParser(ctrl)
 
 	handler := compute.NewComputeHandler(
@@ -50,7 +49,7 @@ func TestComputeHandler(t *testing.T) {
 				mockParser.EXPECT().ParseArgs("get asd").Return("get", []string{"asd"}, nil)
 				mockStorage.EXPECT().Get("asd").Return("", false)
 			},
-			expected: "Value by key=asd not found",
+			expected: "Value by key=asd not found\n",
 		},
 		{
 			name: "Handle: set value to storage",
@@ -59,7 +58,7 @@ func TestComputeHandler(t *testing.T) {
 				mockParser.EXPECT().ParseArgs("set key value").Return("set", []string{"key", "value"}, nil)
 				mockStorage.EXPECT().Set("key", "value")
 			},
-			expected: "Value value saved",
+			expected: "Value value saved\n",
 		},
 		{
 			name: "Handle: get value from storage",
@@ -68,7 +67,7 @@ func TestComputeHandler(t *testing.T) {
 				mockParser.EXPECT().ParseArgs("get key").Return("get", []string{"key"}, nil)
 				mockStorage.EXPECT().Get("key").Return("value", true)
 			},
-			expected: "Value found: value",
+			expected: "Value found: value\n",
 		},
 		{
 			name: "Handle: delete value from storage",
@@ -77,21 +76,23 @@ func TestComputeHandler(t *testing.T) {
 				mockParser.EXPECT().ParseArgs("delete key").Return("delete", []string{"key"}, nil)
 				mockStorage.EXPECT().Delete("key")
 			},
-			expected: "Value key deleted",
+			expected: "Value key deleted\n",
 		},
 	}
 
-	for _, testCase := range testCases {
-		testCase.exec()
-		getOutputText := captureFromStdout()
-		handler.Handle(testCase.requestStr)
-		actualOutput, err := getOutputText()
-		if err != nil {
-			t.Errorf("case %v: getOutputText error: %v \nactual output: %v", testCase.name, err, actualOutput)
-		}
-		if actualOutput != testCase.expected {
-			t.Errorf("case %v: \nexpectedOutput: %v \nactualOutput: %v", testCase.name, testCase.expected, actualOutput)
-		}
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.exec()
+			getOutputText := captureFromStdout()
+			handler.Handle(tt.requestStr)
+			actualOutput, err := getOutputText()
+			if err != nil {
+				t.Errorf("getOutputText error: %v \nactual output: %v", err, actualOutput)
+			}
+			if actualOutput != tt.expected {
+				t.Errorf("expectedOutput: %v \nactualOutput: %v", tt.expected, actualOutput)
+			}
+		})
 	}
 }
 
