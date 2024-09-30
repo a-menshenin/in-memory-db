@@ -39,9 +39,9 @@ func TestComputeHandler(t *testing.T) {
 			name: "Handle: parser error",
 			requestStr: "set asd",
 			exec: func() {
-				mockParser.EXPECT().ParseArgs("set asd").Return("", []string{}, errors.New("ожидается 2 аргумента, получено 1"))
+				mockParser.EXPECT().ParseArgs("set asd").Return("", []string{}, errors.New("expected 2 arguments, got 1"))
 			},
-			expected: "Ошибка при парсинге аргументов: ожидается 2 аргумента, получено 1",
+			expected: "Arguments parse error: expected 2 arguments, got 1",
 		},
 		{
 			name: "Handle: get storage not found",
@@ -50,7 +50,7 @@ func TestComputeHandler(t *testing.T) {
 				mockParser.EXPECT().ParseArgs("get asd").Return("get", []string{"asd"}, nil)
 				mockStorage.EXPECT().Get("asd").Return("", false)
 			},
-			expected: "Значение по ключу asd не найдено",
+			expected: "Value by key=asd not found",
 		},
 		{
 			name: "Handle: set value to storage",
@@ -59,7 +59,7 @@ func TestComputeHandler(t *testing.T) {
 				mockParser.EXPECT().ParseArgs("set key value").Return("set", []string{"key", "value"}, nil)
 				mockStorage.EXPECT().Set("key", "value")
 			},
-			expected: "Значение value сохранено",
+			expected: "Value value saved",
 		},
 		{
 			name: "Handle: get value from storage",
@@ -68,7 +68,7 @@ func TestComputeHandler(t *testing.T) {
 				mockParser.EXPECT().ParseArgs("get key").Return("get", []string{"key"}, nil)
 				mockStorage.EXPECT().Get("key").Return("value", true)
 			},
-			expected: "Найдено значение: value",
+			expected: "Value found: value",
 		},
 		{
 			name: "Handle: delete value from storage",
@@ -77,7 +77,7 @@ func TestComputeHandler(t *testing.T) {
 				mockParser.EXPECT().ParseArgs("delete key").Return("delete", []string{"key"}, nil)
 				mockStorage.EXPECT().Delete("key")
 			},
-			expected: "Значение key удалено",
+			expected: "Value key deleted",
 		},
 	}
 

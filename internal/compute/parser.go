@@ -15,10 +15,6 @@ const (
 	DeleteCmd string = "delete"
 )
 
-type Parser interface {
-	ParseArgs(s string) (string, []string, error)
-}
-
 type RequestParser struct{}
 
 func NewRequestParser() *RequestParser {
@@ -47,29 +43,29 @@ func (b *RequestParser) validate(command string, args []string) error {
 	switch command {
 	case GetCmd:
 		if ln != 1 {
-			return fmt.Errorf("ожидается 1 аргумент, получено %d", ln)
+			return fmt.Errorf("expected 1 argument, got %d", ln)
 		}
 	case SetCmd:
 		if ln != 2 {
-			return fmt.Errorf("ожидается 2 аргумента, получено %d", ln)
+			return fmt.Errorf("expected 2 arguments, got %d", ln)
 		}
 	case DeleteCmd:
 		if ln != 1 {
-			return fmt.Errorf("ожидается 1 аргумент, получено %d", ln)
+			return fmt.Errorf("expected 1 argument, got %d", ln)
 		}
 	default:
-		return errors.New("Неизвестная команда")
+		return errors.New("Unknown command")
 	}
 	
 	r, err := regexp.Compile(availSymbolsRegexp)
 	if err != nil {
-		return errors.New("regexp.Compile error")
+		return errors.New("Compile regexp error")
 	}
 
 	for i := 1; i < len(args); i++ {
 		match := r.MatchString(args[i])
 		if !match {
-			return errors.New("Неизвестные символы в аргументах")
+			return errors.New("Unknown symbols in arguments")
 		}
 	}
 

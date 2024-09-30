@@ -22,7 +22,9 @@ func main() {
 	cfg.ErrorOutputPaths = []string{"app.log"}
 	logger, err = cfg.Build()
     if err != nil {
-		fmt.Println("Ошибка приложения: невозможно создать logger")
+		logger.Error("Create logger error", zap.Error(err))
+		fmt.Println("Create logger error")
+		
         os.Exit(1)
     }
 	defer logger.Sync()
@@ -32,17 +34,17 @@ func main() {
 	requestParser := compute.NewRequestParser()
 	handler := compute.NewComputeHandler(storage, requestParser, logger)
 
-	fmt.Println("\nЭто твоё хранилище. Сохрани / получи / удали данные по ключу")
-	fmt.Println(`key и value могут состоять из символов [a-zA-Zа-яА-Я0-9!?,.;:\"\'\ *#-=_@+№%$^/\|[]]`)
+	fmt.Println("\nSave/Get/Delete value by key")
+	fmt.Println(`key/value available symbols: [a-zA-Zа-яА-Я0-9!?,.;:\"\'\ *#-=_@+№%$^/\|[]]`)
 
 	for {
-		fmt.Println("\nКоманды: set key value || get key || delete key || exit")
-		fmt.Print("Твоя команда: ")
+		fmt.Println("\nCommands: set key value || get key || delete key || exit")
+		fmt.Print("You: ")
 
 		requestStr, err := bufferReader.ReadString('\n')
 		if err != nil && err != io.EOF {
 			logger.Error("bufferReader.ReadString error", zap.Error(err))
-			fmt.Println("Ошибка при чтении аргументов")
+			fmt.Println("Arguments read error")
 
 			return
 		}

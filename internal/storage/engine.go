@@ -1,11 +1,5 @@
 package storage
 
-type Storage interface {
-	Get(key string) (string, bool)
-	Set(key string, value string)
-	Delete(key string)
-}
-
 type InMemoryStorage struct{
 	data map[string]string
 }
