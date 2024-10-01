@@ -24,13 +24,13 @@ func NewComputeHandler(
 	}
 }
 
-func (c *ComputeHandler) Handle(requestStr string) {
+func (c *ComputeHandler) Handle(requestStr string) (string, error) {
 	command, args, err := c.requestParser.ParseArgs(requestStr)
 	if err != nil {
 		c.logger.Error("requestParser.ParseArgs error", zap.Error(err))
 		fmt.Printf("Arguments parse error: %s", err.Error())
 		
-		return
+		return "", fmt.Errorf("Ошибка при парсинге аргументов: %s", err.Error())
 	}
 
 	switch command {
@@ -40,21 +40,25 @@ func (c *ComputeHandler) Handle(requestStr string) {
 			c.logger.Error("storage.Get error: value not found")
 			fmt.Printf("Value by key=%s not found", args[0])
 
-			return
+			return "", fmt.Errorf("Значение по ключу %s не найдено", args[0])
 		}
 
 		fmt.Printf("Value found: %s", v)
 
-		return
+		return v, nil
 	case SetCmd:
 		c.storage.Set(args[0], args[1])
 
 		fmt.Printf("Value %s saved", args[1])
 
-		return
+		return "", nil
 	case DeleteCmd:
 		c.storage.Delete(args[0])
 
 		fmt.Printf("Value %s deleted", args[0])
+
+		return "", nil
 	}
+
+	return "", nil
 }
