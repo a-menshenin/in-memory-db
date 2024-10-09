@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
 )
@@ -20,41 +21,35 @@ type Config struct {
 		IdleTimeout time.Duration `yaml:"idle_timeout",omitempty`
 	} `yaml:"network"`
 	Logging struct {
-		ServerLevel string `yaml:"server_level"`
-		CliOutput string `yaml:"cli_output"`
-		ServerOutput string `yaml:"server_output"`
+		Level string `yaml:"level"`
+		Output string `yaml:"output"`
 	} `yaml:"logging"`
 }
 
-func GetConfig() Config {
-	// cfgPath, exists := os.LookupEnv("CONFIG_PATH")
-	// if !exists {
-	// 	fmt.Println("Config read error")
-
-	// 	os.Exit(1)
-	// }
-
-	data, err := os.ReadFile("/Users/menshenin/GolandProjects/BalunProjects/InMemoryDB2/config.yaml")
+func GetConfig() (Config, error) {
+	err := godotenv.Load(".env")
 	if err != nil {
-		fmt.Println("Config read error")
-		
-		return Config{}
+		return Config{}, fmt.Errorf("Load env error: %w", err)
+   }
+	cfgPath := os.Getenv("CONFIG_PATH")
+
+	data, err := os.ReadFile(cfgPath)
+	if err != nil {
+		return Config{}, fmt.Errorf("Config read error: %w", err)
 	}
 
 	var config Config
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		fmt.Println("Unmarshal config error")
-
-		return Config{}
+		return Config{}, fmt.Errorf("Unmarshal config error: %w", err)
 	}
 
-	return config
+	return config, nil
 }
 
 func CreateLogger(cfg Config) (*zap.Logger, error) {
 	logCfg := zap.NewProductionConfig()
-	logCfg.OutputPaths = []string{cfg.Logging.CliOutput}
-	logCfg.ErrorOutputPaths = []string{cfg.Logging.CliOutput}
+	logCfg.OutputPaths = []string{cfg.Logging.Output}
+	logCfg.ErrorOutputPaths = []string{cfg.Logging.Output}
 	return logCfg.Build()
 }

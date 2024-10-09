@@ -28,7 +28,6 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	
-	
 	cfg := internal.GetConfig()
 	logger, err := internal.CreateLogger(cfg)
 	if err != nil {

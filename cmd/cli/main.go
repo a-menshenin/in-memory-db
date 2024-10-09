@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"syscall"
 	"umemory/internal"
@@ -15,10 +16,15 @@ import (
 )
 
 func main() {
-	cfg := internal.GetConfig()
+	cfg, err := internal.GetConfig()
+	if err != nil {
+		fmt.Println("Get config error: " + err.Error())
+
+		return
+	}
 	logger, err := internal.CreateLogger(cfg)
 	if err != nil {
-		fmt.Println("Create logger error")
+		fmt.Println("Create logger error: " + err.Error())
 
 		return
 	}
@@ -32,7 +38,13 @@ func main() {
 
 	bufferReader := bufio.NewReader(os.Stdin)
 
-	tcpClient, err := network.NewTCPClient(tcpCfg, logger)
+	conn, err := net.Dial("tcp", *tcpCfg.Address)
+	if err != nil {
+		fmt.Printf("Connection create error: %w\n", err)
+
+		return
+	}
+	tcpClient, err := network.NewTCPClient(tcpCfg, conn, logger)
 	if err != nil {
 		logger.Error("Create tcp client error", zap.Error(err))
 		fmt.Println("Create tcp client error")
@@ -46,7 +58,7 @@ func main() {
 
 	for {
 		fmt.Println("\nCommands: set key value || get key || delete key")
-		fmt.Print("Your input: ")
+		fmt.Print("Your command: ")
 
 		request, err := bufferReader.ReadBytes('\n')
 		if err != nil && err != io.EOF {
@@ -63,9 +75,12 @@ func main() {
 			}
 
 			logger.Error("Send client request error", zap.Error(err))
+			fmt.Println("Send client request error")
+
 			continue
 		}
 
+		fmt.Print("Response: ")
 		fmt.Println(string(response))
 	}
 }
