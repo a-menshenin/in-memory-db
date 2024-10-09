@@ -1,0 +1,10 @@
+engine:
+  engine_type: "in_memory"
+network:
+  address: "localhost:8080"
+  max_connections: 100
+  max_message_size: 8000
+  idle_timeout: 5m
+logging:
+  level: "info"
+  output: "cli.log"
