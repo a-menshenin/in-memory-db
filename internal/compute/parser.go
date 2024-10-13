@@ -31,8 +31,15 @@ func (b *RequestParser) ParseArgs(s string) (string, []string, error) {
 
 	err := b.validate(command, args)
 	if err != nil {
+		fmt.Println("ParseArgs validate error: " + err.Error())
 		return "", nil, err
 	}
+
+	fmt.Println("command")
+	fmt.Println(command)
+
+	fmt.Println("args")
+	fmt.Println(args)
 
 	return command, args, nil
 }
